@@ -22,6 +22,7 @@ before_script:
   - set -o pipefail
 
 tags:
+  - tag1
 
 stages:
   - build
