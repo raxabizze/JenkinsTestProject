@@ -1,47 +1,35 @@
-image: openjdk:8-jdk
+# FROM 指令用于指定后续构建 image 所使用的基础 image
+# 这里指定 openjdk 作为基础 image，便不再需要配置 JDK 环境了
+FROM openjdk:8-jdk
 
-variables:
-  ANDROID_COMPILE_SDK: "28"
-  ANDROID_BUILD_TOOLS: "28.0.2"
-  ANDROID_SDK_TOOLS:   "4333796"
+# ARG 用于指定传递给构建运行时的变量
+# sdk-tools 的版本，版本号在 https://developer.android.com/studio/index.html 页面查看
+ARG SDK_TOOLS_VERSION=4333796
+# build-tools 的版本
+ARG BUILD_TOOLS_VERSION=27.0.3
+# 指定 compileSdkVersion 的值
+ARG COMPILE_SDK_VERSION=27
 
-before_script:
-  - apt-get --quiet update --yes
-  - apt-get --quiet install --yes wget tar unzip lib32stdc++6 lib32z1
-  - wget --quiet --output-document=android-sdk.zip https://dl.google.com/android/repository/sdk-tools-linux-${ANDROID_SDK_TOOLS}.zip
-  - unzip -d android-sdk-linux android-sdk.zip
-  - echo y | android-sdk-linux/tools/bin/sdkmanager "platforms;android-${ANDROID_COMPILE_SDK}" >/dev/null
-  - echo y | android-sdk-linux/tools/bin/sdkmanager "platform-tools" >/dev/null
-  - echo y | android-sdk-linux/tools/bin/sdkmanager "build-tools;${ANDROID_BUILD_TOOLS}" >/dev/null
-  - export ANDROID_HOME=$PWD/android-sdk-linux
-  - export PATH=$PATH:$PWD/android-sdk-linux/platform-tools/
-  - chmod +x ./gradlew
-  # temporarily disable checking for EPIPE error and use yes to accept all licenses
-  - set +o pipefail
-  - yes | android-sdk-linux/tools/bin/sdkmanager --licenses
-  - set -o pipefail
+# WORDDIR 用于在容器内设置一个工作目录，之后的一些命令都会在这个目录下执行
+WORKDIR /project
 
-tags:
-  - tag1
+# ENV 用于设置一个环境变量，之后的命令可以使用
+# 指定 Android SDK 的路径
+ENV ANDROID_HOME /project/sdk
 
-stages:
-  - build
-  - test
-
-lintDebug:
-  stage: build
-  script:
-    - ./gradlew -Pci --console=plain :app:lintDebug -PbuildDir=lint
-
-assembleDebug:
-  stage: build
-  script:
-    - ./gradlew assembleDebug
-  artifacts:
-    paths:
-    - app/build/outputs/
-
-debugTests:
-  stage: test
-  script:
-    - ./gradlew -Pci --console=plain :app:testDebug
+# RUN 用于在容器中执行命令
+# 安装 Android SDK 和后续构建所需的工具
+RUN mkdir sdk && \
+    wget https://dl.google.com/android/repository/sdk-tools-linux-${SDK_TOOLS_VERSION}.zip && \
+    unzip -qd sdk sdk-tools-linux-${SDK_TOOLS_VERSION}.zip && \
+    rm -f sdk-tools-linux-${SDK_TOOLS_VERSION}.zip && \
+    (yes | ./sdk/tools/bin/sdkmanager --no_https --update) && \
+    (yes | ./sdk/tools/bin/sdkmanager --no_https "build-tools;${BUILD_TOOLS_VERSION}") && \
+    (yes | ./sdk/tools/bin/sdkmanager --no_https "platform-tools") && \
+    (yes | ./sdk/tools/bin/sdkmanager --no_https "platforms;android-${COMPILE_SDK_VERSION}") && \
+    (yes | ./sdk/tools/bin/sdkmanager --no_https "extras;google;m2repository") && \
+    (yes | ./sdk/tools/bin/sdkmanager --no_https "extras;android;m2repository") && \
+    (yes | ./sdk/tools/bin/sdkmanager --no_https "extras;m2repository;com;android;support;constraint;constraint-layout-solver;1.0.2") && \
+    (yes | ./sdk/tools/bin/sdkmanager --no_https "extras;m2repository;com;android;support;constraint;constraint-layout;1.0.2")
+    apt-get update -y && apt-get install -y bash git openssh-client && \
+    rm -rf /var/lib/apt/lists/* && \
