@@ -1,27 +1,31 @@
-image: openjdk:8-jdk
+# 指定全局 job 使用的 Docker Image
+image: yourself.namespace/android-build:latest
 
+# 定义全局变量
+# 指定网络代理
 variables:
-  ANDROID_COMPILE_SDK: "25"
-  ANDROID_BUILD_TOOLS: "25.0.2"
-  ANDROID_SDK_TOOLS: "25.2.5"
-  
-before_script:
-  - export ANDROID_HOME=/Users/willy/Library/Android/sdk/
-  - export PROJECT_PATH=$PWD/
-  
-stages:
-  - test
+  HTTP_PROXY: "http://docker.for.mac.localhost:port"
+  HTTPS_PROXY: "http://docker.for.mac.localhost:port"
 
-unitTests:
-  stage: test
-  script:
-    - ./gradlew test
-    
-functionalTests:
-  stage: test
-  script:
-    - chmod +x ./wait-emulator
-    - /Users/willy/Library/Android/sdk/tools/emulator -avd Nexus_5_API_22 -no-window -no-audio & ./wait-emulator
-    - adb shell input keyevent 82
-    - ./gradlew cAT
-    - adb emu kill
+# 预先执行脚本
+# 写入 gradle 配置，具体配置根据项目配置来
+before_script:
+  - echo -e "systemProp.https.proxyHost=docker.for.mac.localhost\nsystemProp.https.proxyPort=port\nsystemProp.http.proxyHost=docker.for.mac.localhost\nsystemProp.http.proxyPort= port\nandroid.useDeprecatedNdk=true\norg.gradle.jvmargs=-Xmx2048m -XX:MaxPermSize=512m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8" > gradle.properties
+
+# 定义任务执行阶段
+# 在这里仅执行 build 任务
+stages:
+  - build
+
+# build job
+build:
+  stage: build # 指定任务阶段
+  tags: # 指定执行任务的 Runner
+    - my-tag
+  only: # 仅 git tag 更新时执行任务
+    - tags
+  script: # 任务执行脚本，执行构建脚本
+    - ./gradlew --stacktrace assembleRelease
+  artifacts: # 任务构建输出，指定需要保留的文件，之后可以在 GitLab Web 端下载
+    paths:
+      - app/build/outputs/
