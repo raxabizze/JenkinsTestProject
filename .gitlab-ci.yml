@@ -2,3 +2,12 @@ image: openjdk:8-jdk
   
 before_script:
     - cat /etc/hosts
+    
+stages:
+  - test
+  - build
+
+unitTests:
+  stage: test
+  script:
+    - ./gradlew test
