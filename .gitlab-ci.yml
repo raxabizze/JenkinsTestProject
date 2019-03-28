@@ -21,6 +21,9 @@ before_script:
   - yes | android-sdk-linux/tools/bin/sdkmanager --licenses
   - set -o pipefail
 
+extra_hosts:
+ - "root:10.211.55.6"
+
 stages:
   - test
 
