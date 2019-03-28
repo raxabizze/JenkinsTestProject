@@ -4,8 +4,8 @@ image: yourself.namespace/android-build:latest
 # 定义全局变量
 # 指定网络代理
 variables:
-  HTTP_PROXY: "http://docker.for.mac.localhost:port"
-  HTTPS_PROXY: "http://docker.for.mac.localhost:port"
+  HTTP_PROXY: "10.211.55.6:80"
+  HTTPS_PROXY: "10.211.55.6:80"
 
 # 预先执行脚本
 # 写入 gradle 配置，具体配置根据项目配置来
