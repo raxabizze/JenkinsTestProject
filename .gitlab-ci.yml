@@ -21,9 +21,6 @@ before_script:
   - yes | android-sdk-linux/tools/bin/sdkmanager --licenses
   - set -o pipefail
 
-tags:
-  - g9LfHsrchYp-PrMe-9_J
-
 stages:
   - build
   - test
