@@ -1,38 +1,27 @@
-image: jangrewe/gitlab-ci-android
+image: openjdk:8-jdk
 
 variables:
-  ANDROID_COMPILE_SDK: "27"
-  APP_NAME: "NameOfYourApp"
-
-cache:
-  key: ${CI_PROJECT_ID}
-  paths:
-    - .m2/
-    - .gradle/
+  ANDROID_COMPILE_SDK: "25"
+  ANDROID_BUILD_TOOLS: "25.0.2"
+  ANDROID_SDK_TOOLS: "25.2.5"
 
 before_script:
-  - export GRADLE_USER_HOME=$(pwd)/.gradle
-  - chmod +x ./gradlew
-  - apt-get update -y && apt-get install wget -y
+  - export ANDROID_HOME=/Users/willy/Library/Android/sdk/
+  - export PROJECT_PATH=$PWD/
 
 stages:
-  - build
   - test
 
-lintDebug:
-  stage: build
-  script:
-    - ./gradlew -Pci --console=plain :app:lintDebug -PbuildDir=lint
-
-assembleDebug:
-  stage: build
-  script:
-    - ./gradlew assembleDebug
-  artifacts:
-    paths:
-    - app/build/outputs/
-
-debugTests:
+unitTests:
   stage: test
   script:
-    - ./gradlew -Pci --console=plain :app:testDebug
+    - ./gradlew test
+
+functionalTests:
+  stage: test
+  script:
+    - chmod +x ./wait-emulator
+    - /Users/willy/Library/Android/sdk/tools/emulator -avd Nexus_5_API_22 -no-window -no-audio & ./wait-emulator
+    - adb shell input keyevent 82
+    - ./gradlew cAT
+    - adb emu kill
