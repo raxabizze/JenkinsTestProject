@@ -11,6 +11,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Log.e("Test", "Test");
+    }
+
+    public String firstBranch(String allBranch){
+        String[] split = allBranch.split(",");
+        return split[0];
+    }
+
+    public String lastBranch(String allBranch){
+        String[] split = allBranch.split(",");
+        return split[split.length - 1];
     }
 }
