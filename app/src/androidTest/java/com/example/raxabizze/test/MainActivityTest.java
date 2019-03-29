@@ -40,6 +40,6 @@ public class MainActivityTest {
     @Test
     public void testLastBranch(){
         String last = mainActivity.lastBranch("A部門,B課,C小組");
-        Assert.assertEquals("C小組", last);
+        Assert.assertEquals("Cc小sad組", last);
     }
 }
