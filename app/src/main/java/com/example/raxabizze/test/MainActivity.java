@@ -22,4 +22,8 @@ public class MainActivity extends AppCompatActivity {
         String[] split = allBranch.split(",");
         return split[split.length - 1];
     }
+
+    public String returnStringABC(){
+        return "ABC";
+    }
 }
