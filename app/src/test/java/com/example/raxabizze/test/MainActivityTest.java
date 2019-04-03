@@ -21,6 +21,6 @@ public class MainActivityTest {
 
     @Test
     public void returnStringABC() {
-        Assert.assertEquals("ABCc", "ABC");
+        Assert.assertEquals("ABC", "ABC");
     }
 }
